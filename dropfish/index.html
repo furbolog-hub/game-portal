@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#071b2d" />
+  <title>DropFish</title>
+  <script>
+    // Раннее определение обычного Safari на iPhone до построения интерфейса.
+    (() => {
+      const ua = navigator.userAgent || '';
+      const isIPhone = /iPhone|iPod/i.test(ua);
+      const isWebKit = /WebKit/i.test(ua);
+      const isOtherIOSBrowser = /CriOS|FxiOS|EdgiOS|OPiOS|DuckDuckGo/i.test(ua);
+      const isStandalone = window.matchMedia?.('(display-mode: standalone)').matches || navigator.standalone === true;
+      const launchText = `${location.search} ${location.hash}`;
+      const hasTelegramLaunchParams = /tgWebApp(?:Data|Version|Platform|ThemeParams)/i.test(launchText);
+      if (isIPhone && isWebKit && !isOtherIOSBrowser && !isStandalone && !hasTelegramLaunchParams) {
+        document.documentElement.classList.add('iphone-safari-browser');
+      }
+    })();
+  </script>
+  <link rel="stylesheet" href="style.css?v=1.88" />
+  <script>
+  /* Telegram SDK грузим ТОЛЬКО внутри Telegram. В обычном браузере он не нужен,
+     а его синхронная загрузка блокировала отрисовку страницы на минуты, если
+     telegram.org недоступен (блокировки/медленная сеть). Внутри Telegram
+     поведение прежнее: тот же блокирующий тег, тот же порядок выполнения. */
+  (function () {
+    var q = (location.hash || '') + (location.search || '');
+    var inTG = /tgWebApp/i.test(q) ||
+               typeof window.TelegramWebviewProxy !== 'undefined' ||
+               (window.external && 'notify' in window.external) ||
+               /Telegram/i.test(navigator.userAgent);
+    if (inTG) {
+      document.write('<scr' + 'ipt src="https://telegram.org/js/telegram-web-app.js"><\/scr' + 'ipt>');
+    }
+  })();
+  </script>
+  <script src="viewport-fit.js?v=1.84-fit-v3"></script>
+</head>
+<body>
+  <main class="app-shell">
+    <header class="topbar glass">
+      <div>
+        <p class="eyebrow">Telegram Mini App • Browser</p>
+        <h1>🎣 DropFish</h1>
+      </div>
+      <div class="header-actions">
+        <a class="menu-exit-btn" href="../" aria-label="Выйти в игровое меню">← Меню</a>
+        <button id="soundToggleBtn" class="icon-btn sound-toggle-btn" aria-label="Отключить звуки" title="Отключить звуки" aria-pressed="false">🔊</button>
+        <button id="motionBtn" class="icon-btn motion-btn" aria-label="Уменьшить анимации" title="Уменьшить анимации">✨</button>
+        <button id="guideBtn" class="icon-btn" aria-label="Открыть справочник">📘</button>
+      </div>
+    </header>
+
+    <section id="lakeCard" class="lake-card glass merged-weather-card">
+      <div class="ambient-layer" aria-hidden="true">
+        <span class="bubble bubble-1"></span><span class="bubble bubble-2"></span><span class="bubble bubble-3"></span>
+        <span class="fish-shadow fish-shadow-1">◆</span><span class="fish-shadow fish-shadow-2">◆</span>
+      </div>
+      <div id="castArc" class="cast-arc" aria-hidden="true"></div>
+      <div id="splash" class="splash" aria-hidden="true">💦</div>
+      <div class="lake-stat-strip" aria-label="Статистика игровой сессии">
+        <div class="lake-stat lake-stat-casts"><span>Забросы</span><strong id="castsLabel">10</strong></div>
+        <div class="lake-stat lake-stat-weight"><span>Вес сейчас</span><strong id="weightLabel">0,0 кг</strong></div>
+      </div>
+      <div class="weather-main">
+        <div id="weatherScene" class="weather-scene" aria-hidden="true">☀️</div>
+        <div class="weather-copy">
+          <span class="weather-kicker">Погода</span>
+          <h2 id="weatherTitle">Солнечно</h2>
+          <p id="weatherDescription">Высока вероятность встретить чайку.</p>
+        </div>
+      </div>
+      <div id="arcadeLayer" class="arcade-track" aria-label="Дополнительная аркадная рыбалка">
+        <span id="arcadeStatus" class="arcade-catch-status" role="status" aria-live="polite"></span>
+        <span class="arcade-track-water" aria-hidden="true"></span>
+      </div>
+      <span id="weatherLabel" class="visually-hidden">—</span>
+    </section>
+
+    <section class="actions cast-panel">
+      <button id="castBtn" class="primary-btn">🎣 Забросить удочку</button>
+      <button id="restartBtn" class="secondary-btn">↻ Новая игра</button>
+    </section>
+
+    <section class="inventory glass">
+      <div class="section-heading">
+        <h2>Активные эффекты</h2>
+        <span id="effectCount">0</span>
+      </div>
+      <div id="effectsList" class="chips"><span class="muted">Пока нет</span></div>
+    </section>
+
+    <section class="history glass">
+      <div class="section-heading">
+        <h2>Хронология улова</h2>
+        <span id="historyCount">0</span>
+      </div>
+      <div id="historyScroll" class="history-scroll">
+        <ol id="historyList" class="history-list"></ol>
+        <div id="emptyHistory" class="empty-state">Первый заброс ждёт вас.</div>
+        <div id="resultCard" class="result-card hidden"></div>
+      </div>
+    </section>
+  </main>
+
+
+  <dialog id="guideDialog" class="modal">
+    <div class="modal-card wide">
+      <button class="close-btn" data-close="guideDialog" aria-label="Закрыть">×</button>
+      <h2>Справочник</h2>
+      <nav id="guideTabs" class="tabs"></nav>
+      <div id="guideContent" class="guide-content"></div>
+    </div>
+  </dialog>
+
+  <dialog id="tradeDialog" class="modal trade-modal">
+    <div class="modal-card wide trade-card">
+      <h2>🚢 Торговое судно</h2>
+      <p class="trade-intro">Команда судна готова обменять редкие находки на крупную рыбу.</p>
+      <div id="tradeOffers" class="trade-offers"></div>
+      <div id="tradeResults" class="trade-results"></div>
+      <div class="trade-actions">
+        <button id="tradeAllBtn" type="button" class="primary-btn">Обменять всё</button>
+        <button id="tradeFinishBtn" type="button" class="secondary-btn">Завершить торговлю</button>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="choiceDialog" class="modal">
+    <div class="modal-card">
+      <h2 id="choiceTitle">Выбор</h2>
+      <p id="choiceText"></p>
+      <div id="choiceButtons" class="choice-buttons"></div>
+    </div>
+  </dialog>
+
+  <div id="effectOverlay" class="effect-overlay" aria-hidden="true">
+    <div id="effectBackdrop" class="effect-backdrop"></div>
+    <div id="effectParticles" class="effect-particles"></div>
+    <div id="effectIcon" class="effect-icon"></div>
+    <div id="effectTitle" class="effect-title"></div>
+    <div id="effectSubtitle" class="effect-subtitle"></div>
+  </div>
+  <div id="weatherFx" class="weather-fx" aria-hidden="true"></div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+
+  <dialog id="dailyLimitDialog" class="modal daily-limit-modal">
+    <div class="modal-card daily-limit-card">
+      <h2>Рыбалка на сегодня завершена</h2>
+      <p id="dailyLimitText">Сегодня вы уже рыбачили, приходите позже.</p>
+      <a class="primary-btn daily-limit-back" href="../">К выбору игр</a>
+    </div>
+  </dialog>
+
+  <script src="ui-enhancements.min.js?v=1.84"></script>
+  <script src="script.public.min.js?v=14.25-build61-public-obfuscated"></script>
+  <script>
+  /* Публичная сборка: одна сессия в сутки. Кнопка «Новая игра» отключена
+     (удалять её из разметки нельзя — обфусцированный скрипт на неё подписан). */
+  (() => {
+    const kill = () => { const b = document.getElementById("restartBtn"); if (b) { b.disabled = true; b.hidden = true; } };
+    kill();
+    document.addEventListener("DOMContentLoaded", kill);
+    setInterval(kill, 1000);
+  })();
+  </script>
+  <script>
+  /* Публичная сборка: лимит одной рыбалки в сутки остаётся, но итоги можно
+     открыть в любой момент (для скриншота). Отдельного окна итогов в DropFish
+     нет — итоги это сама страница (вес, эффекты, хроника улова), а окно лимита
+     её перекрывает и закрыть его нельзя (игра открывает его обратно).
+     Поэтому собираем копию итогов и показываем её ПОВЕРХ окна лимита.
+     Новую игру начать нельзя: панель заброса скрыта, #restartBtn скрыт и disabled. */
+  (() => {
+    const byId = (id) => document.getElementById(id);
+    let added = false, dialog = null;
+
+    const buildDialog = () => {
+      if (dialog) return dialog;
+      dialog = document.createElement("dialog");
+      dialog.id = "limitResultsDialog";
+      dialog.className = "modal";
+      dialog.innerHTML =
+        '<div class="modal-card wide">' +
+          '<button type="button" class="modal-close" id="limitResultsClose" aria-label="Закрыть">×</button>' +
+          '<h2>Итоги рыбалки</h2>' +
+          '<div id="limitResultsBody"></div>' +
+        '</div>';
+      document.body.appendChild(dialog);
+      dialog.querySelector("#limitResultsClose").addEventListener("click", () => dialog.close());
+      return dialog;
+    };
+
+    const fillAndOpen = () => {
+      const d = buildDialog();
+      const body = d.querySelector("#limitResultsBody");
+      body.innerHTML = "";
+      // копируем блоки с итогами: улов/погода, активные эффекты, хроника улова
+      ["#lakeCard", ".inventory", ".history"].forEach((sel) => {
+        const src = document.querySelector(sel);
+        if (!src) return;
+        const copy = src.cloneNode(true);
+        copy.removeAttribute("id");
+        copy.querySelectorAll("[id]").forEach((e) => e.removeAttribute("id"));  // без дублей id
+        copy.querySelectorAll("button, input, select, .ambient-layer, .arcade-track").forEach((e) => e.remove());
+        copy.style.maxHeight = "none";
+        body.appendChild(copy);
+      });
+      if (!d.open) d.showModal();   // поверх окна лимита
+    };
+
+    const addBtn = () => {
+      if (added) return;
+      const dlg = byId("dailyLimitDialog");
+      if (!dlg || !document.body.classList.contains("game-finished")) return;
+      const card = dlg.querySelector(".modal-card");
+      if (!card) return;
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.id = "limitResultsBtn";
+      btn.className = "primary-btn";
+      btn.textContent = "\u{1F4CA} Посмотреть итоги";
+      btn.addEventListener("click", fillAndOpen);
+      const link = card.querySelector("a");
+      link ? card.insertBefore(btn, link) : card.appendChild(btn);
+      added = true;
+    };
+    addBtn();
+    document.addEventListener("DOMContentLoaded", addBtn);
+    setInterval(addBtn, 700);
+  })();
+  </script>
+
+  <script>
+  /* Публичная сборка: жёсткая блокировка перезапуска сессии.
+     Кнопки скрыты и disabled, но этого мало — при принудительном включении (devtools)
+     обработчик обфусцированного скрипта всё равно сбрасывал игру. Перехватываем клик
+     на фазе capture, до того как до него дойдёт обработчик игры. */
+  (() => {
+    const BLOCKED = "#newGameBtn, #restartBtn";
+    const stop = (e) => {
+      const t = e.target && e.target.closest ? e.target.closest(BLOCKED) : null;
+      if (!t) return;
+      e.preventDefault();
+      e.stopImmediatePropagation();
+    };
+    ["click", "pointerdown", "mousedown", "touchstart"].forEach((ev) =>
+      document.addEventListener(ev, stop, true)
+    );
+  })();
+  </script>
+
+  <div id="buildStamp" aria-hidden="true">v1.88 · public · dropfish</div>
+  <style>
+  #buildStamp {
+    position: fixed; right: 5px; z-index: 2147483000;
+    bottom: calc(2px + env(safe-area-inset-bottom, 0px));
+    font: 600 9px/1 system-ui, -apple-system, sans-serif;
+    letter-spacing: .03em; color: rgba(255,255,255,.42);
+    text-shadow: 0 1px 2px rgba(0,0,0,.5);
+    pointer-events: none; user-select: none;
+  }
+  </style>
+</body>
+</html>
