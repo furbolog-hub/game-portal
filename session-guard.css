@@ -1,0 +1,7 @@
+html.public-game-locked body>:not(.public-gate){pointer-events:none;user-select:none}
+.public-gate{position:fixed;inset:0;z-index:2147483647;display:grid;place-items:center;padding:18px;background:rgba(3,12,22,.88);backdrop-filter:blur(9px);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:#eef8ff}
+.public-gate-card{width:min(460px,100%);display:grid;gap:15px;padding:26px;border:1px solid rgba(123,209,255,.42);border-radius:22px;background:linear-gradient(145deg,#102f47,#071827);box-shadow:0 24px 80px rgba(0,0,0,.55);text-align:center}
+.public-gate-card h1,.public-gate-card p{margin:0}.public-gate-card p{line-height:1.5;color:#c8dbea}
+.public-gate-card button{min-height:50px;padding:12px 18px;border:0;border-radius:14px;background:linear-gradient(135deg,#ffd45a,#ff9f31);color:#17202a;font-size:1rem;font-weight:900;cursor:pointer}
+.public-gate-card button:disabled{filter:saturate(.5);cursor:wait}.public-gate-card small{min-height:1.25em;color:#ffcfbf}.public-gate-card a{color:#9edcff}
+.public-countdown{font-variant-numeric:tabular-nums;font-size:clamp(2rem,10vw,3.3rem);letter-spacing:.06em;color:#ffe07a}

@@ -1,10 +1,13 @@
 <!doctype html>
-<html lang="ru">
+<html lang="ru" data-game="agroclick">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#304f20" />
   <title>AgroClick</title>
+  <link rel="stylesheet" href="../session-guard.css">
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="../session-guard.min.js"></script>
   <link rel="stylesheet" href="style.css?v=1.88" />
   <script>
   /* Telegram SDK грузим ТОЛЬКО внутри Telegram. В обычном браузере он не нужен,
@@ -22,7 +25,7 @@
     }
   })();
   </script>
-  <script src="viewport-fit.js?v=1.84-fit-v3"></script>
+  <script src="viewport-fit.min.js"></script>
 </head>
 <body>
   <script>
@@ -172,158 +175,7 @@
   </dialog>
 
 
-  <dialog id="dailyLimitDialog" class="modal daily-limit-modal">
-    <div class="modal-card">
-      <h2>Урожай уже собран</h2>
-      <p id="dailyLimitText">Сегодня вы всё собрали, приходите позже.</p>
-      <a class="primary-action daily-limit-back" href="../">К выбору игр</a>
-    </div>
-  </dialog>
-
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <script>
-  /* Публичная сборка: лимит сбрасывается ПОСЛЕ ПОЛУНОЧИ (как в DropFish).
-     Штатная логика игры держит лимит 24 часа от метки agroClickDailyCompletedV154,
-     поэтому: 1) до запуска игры стираем метку и сессию, если они от прошлого календарного дня;
-     2) текст в окне лимита подменяем своим отсчётом до полуночи (игра переписывает его
-     каждую секунду, поэтому следим через MutationObserver, а не просто раз в секунду). */
-  (() => {
-    const SESSION = "agroClickPublicSessionV154";
-    const DONE = "agroClickDailyCompletedV154";
-    const DAYKEY = "agroClickDayKey";
-    const day = (d) => d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate();
-    const today = day(new Date());
-    try {
-      const doneTs = Number(localStorage.getItem(DONE));
-      const prevDay = localStorage.getItem(DAYKEY);
-      const staleDone = doneTs && day(new Date(doneTs)) !== today;
-      const staleDay = prevDay && prevDay !== today;
-      /* запасной случай: сессия осталась от прошлой сборки (метки дня ещё нет) */
-      let staleSession = false;
-      try {
-        const s = JSON.parse(localStorage.getItem(SESSION) || "null");
-        if (s && s.finishedAt && day(new Date(s.finishedAt)) !== today) staleSession = true;
-      } catch (e) {}
-      if (staleDone || staleDay || staleSession) {                 /* новый день — новая игра */
-        localStorage.removeItem(DONE);
-        localStorage.removeItem(SESSION);
-      }
-      localStorage.setItem(DAYKEY, today);
-    } catch (e) {}
-
-    const pad = (n) => String(n).padStart(2, "0");
-    const wanted = () => {
-      const now = new Date();
-      const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0, 0);
-      const s = Math.max(0, Math.floor((midnight - now) / 1000));
-      return "Сегодня вы всё собрали. Новая игра будет доступна после полуночи — через "
-        + pad(Math.floor(s / 3600)) + ":" + pad(Math.floor((s % 3600) / 60)) + ":" + pad(s % 60) + ".";
-    };
-    const apply = () => {
-      const dlg = document.getElementById("dailyLimitDialog");
-      const txt = document.getElementById("dailyLimitText");
-      if (!dlg || !txt || !dlg.open) return;
-      const w = wanted();
-      if (txt.textContent !== w) txt.textContent = w;   /* сравнение защищает от зацикливания */
-    };
-    const start = () => {
-      const txt = document.getElementById("dailyLimitText");
-      if (!txt) return;
-      new MutationObserver(apply).observe(txt, { childList: true, characterData: true, subtree: true });
-      setInterval(apply, 500);
-      apply();
-    };
-    document.addEventListener("DOMContentLoaded", start);
-    start();
-  })();
-  </script>
-  <script src="script.public.min.js?v=1.84-fertilizer-beetle"></script>
-  <script>setInterval(()=>{const d=document.getElementById("dailyLimitDialog"),a=document.querySelector(".app-shell");if(a)a.inert=Boolean(d&&d.open);},500);</script>
-  <script>
-  /* Публичная сборка: одна сессия в сутки. Тестовая кнопка перезапуска в окне
-     итогов отключена (удалять её нельзя — обфусцированный скрипт на неё подписан). */
-  (() => {
-    const kill = () => { const b = document.getElementById("newGameBtn"); if (b) { b.disabled = true; b.hidden = true; } };
-    kill();
-    document.addEventListener("DOMContentLoaded", kill);
-    setInterval(kill, 1000);
-  })();
-  </script>
-  <script>
-  /* Публичная сборка: итоги завершённой сессии можно открыть в любой момент (для скриншота),
-     но лимит одной сессии в сутки при этом обойти нельзя.
-     ВАЖНО 1: окно лимита НЕ закрываем — игра тут же открывает его обратно. Итоги показываем
-     ПОВЕРХ него: следующий showModal() кладёт диалог выше в top-layer.
-     ВАЖНО 2: если игрок закрыл окно итогов (флаг resultDialogDismissed), при следующем заходе
-     игра больше НЕ наполняет #resultContent — раньше из-за этого кнопка не появлялась.
-     Поэтому итоги пересобираем штатной кнопкой игры #resultsBtn: она отрисовывает их заново
-     из сохранённой сессии и сама открывает #resultDialog поверх лимита. */
-  (() => {
-    const byId = (id) => document.getElementById(id);
-    const hasResults = () => {
-      const rb = byId("resultsBtn"), rc = byId("resultContent");
-      return Boolean((rb && !rb.classList.contains("hidden")) || (rc && rc.textContent.trim()));
-    };
-    const openResults = () => {
-      const res = byId("resultDialog"), rb = byId("resultsBtn");
-      if (!res) return;
-      if (res.open) {                                   /* уже открыто под лимитом — поднять наверх */
-        try { res.close(); } catch (e) {}
-        try { res.showModal(); } catch (e) {}
-        return;
-      }
-      if (rb) { rb.classList.remove("hidden"); rb.click(); }   /* игра отрисует итоги и откроет окно */
-      setTimeout(() => { if (!res.open) { try { res.showModal(); } catch (e) {} } }, 60);
-    };
-    const addBtn = () => {
-      const dlg = byId("dailyLimitDialog");
-      if (!dlg || !hasResults() || byId("limitResultsBtn")) return;
-      const card = dlg.querySelector(".modal-card");
-      if (!card) return;
-      const btn = document.createElement("button");
-      btn.type = "button";
-      btn.id = "limitResultsBtn";
-      btn.className = "primary-action";
-      btn.textContent = "\u{1F4CA} Посмотреть итоги";
-      btn.addEventListener("click", openResults);
-      const link = card.querySelector("a");
-      link ? card.insertBefore(btn, link) : card.appendChild(btn);
-    };
-    addBtn();
-    document.addEventListener("DOMContentLoaded", addBtn);
-    setInterval(addBtn, 700);
-  })();
-  </script>
-
-  <script>
-  /* Публичная сборка: жёсткая блокировка перезапуска сессии.
-     Кнопки скрыты и disabled, но этого мало — при принудительном включении (devtools)
-     обработчик обфусцированного скрипта всё равно сбрасывал игру. Перехватываем клик
-     на фазе capture, до того как до него дойдёт обработчик игры. */
-  (() => {
-    const BLOCKED = "#newGameBtn, #restartBtn";
-    const stop = (e) => {
-      const t = e.target && e.target.closest ? e.target.closest(BLOCKED) : null;
-      if (!t) return;
-      e.preventDefault();
-      e.stopImmediatePropagation();
-    };
-    ["click", "pointerdown", "mousedown", "touchstart"].forEach((ev) =>
-      document.addEventListener(ev, stop, true)
-    );
-  })();
-  </script>
-
-  <div id="buildStamp" aria-hidden="true">v1.88 · public · agroclick</div>
-  <style>
-  #buildStamp {
-    position: fixed; right: 5px; z-index: 2147483000;
-    bottom: calc(2px + env(safe-area-inset-bottom, 0px));
-    font: 600 9px/1 system-ui, -apple-system, sans-serif;
-    letter-spacing: .03em; color: rgba(255,255,255,.42);
-    text-shadow: 0 1px 2px rgba(0,0,0,.5);
-    pointer-events: none; user-select: none;
-  }
-  </style>
+  <script src="script.public.min.js"></script>
 </body>
 </html>
