@@ -5,3 +5,6 @@ html.public-game-locked body>:not(.public-gate){pointer-events:none;user-select:
 .public-gate-card button{min-height:50px;padding:12px 18px;border:0;border-radius:14px;background:linear-gradient(135deg,#ffd45a,#ff9f31);color:#17202a;font-size:1rem;font-weight:900;cursor:pointer}
 .public-gate-card button:disabled{filter:saturate(.5);cursor:wait}.public-gate-card small{min-height:1.25em;color:#ffcfbf}.public-gate-card a{color:#9edcff}
 .public-countdown{font-variant-numeric:tabular-nums;font-size:clamp(2rem,10vw,3.3rem);letter-spacing:.06em;color:#ffe07a}
+.public-gate-review{background:linear-gradient(135deg,#7ce8ff,#69d899)!important}
+html.public-results-review #newGameBtn,
+html.public-results-review #restartBtn{display:none!important}
