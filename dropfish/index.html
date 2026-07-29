@@ -1,13 +1,10 @@
 <!doctype html>
-<html lang="ru" data-game="dropfish">
+<html lang="ru">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#071b2d" />
   <title>DropFish</title>
-  <link rel="stylesheet" href="../session-guard.css?v=1.1-results-review">
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <script src="../session-guard.min.js?v=1.1-results-review"></script>
   <script>
     // Раннее определение обычного Safari на iPhone до построения интерфейса.
     (() => {
@@ -40,7 +37,7 @@
     }
   })();
   </script>
-  <script src="viewport-fit.min.js"></script>
+  <script src="viewport-fit.js?v=1.84-fit-v3"></script>
 </head>
 <body>
   <main class="app-shell">
@@ -58,6 +55,7 @@
       </div>
       <div class="header-actions">
         <a class="menu-exit-btn" href="../" aria-label="Выйти в игровое меню"><span class="ui-icon is-menu-icon"><img src="./assets/icons/ui/menu.webp" alt="" aria-hidden="true"></span><span>Меню</span></a>
+        <button id="dropfishDebugBtn" class="icon-btn debug-toggle-btn" aria-label="Открыть тестовую панель" title="Тестовая панель"><span class="ui-icon"><img src="./assets/icons/ui/debug-panel.webp" alt="" aria-hidden="true"></span></button>
         <button id="soundToggleBtn" class="icon-btn sound-toggle-btn" aria-label="Отключить звуки" title="Отключить звуки" aria-pressed="false"><span class="ui-icon"><img src="./assets/icons/ui/sound-on.webp" alt="" aria-hidden="true"></span></button>
         <button id="motionBtn" class="icon-btn motion-btn" aria-label="Уменьшить анимации" title="Уменьшить анимации"><span class="ui-icon"><img src="./assets/icons/ui/animation-on.webp" alt="" aria-hidden="true"></span></button>
         <button id="guideBtn" class="icon-btn" aria-label="Открыть справочник" title="Открыть справочник"><span class="ui-icon"><img src="./assets/icons/ui/guide.webp" alt="" aria-hidden="true"></span></button>
@@ -140,6 +138,14 @@
   </dialog>
 
 
+  <dialog id="dropfishDebugDialog" class="modal debug-modal">
+    <div class="modal-card wide debug-card ui-dialog-panel">
+      <button class="modal-close" data-close="dropfishDebugDialog" type="button">×</button>
+      <h2 class="ui-dialog-title"><span class="ui-icon is-title-icon"><img src="./assets/icons/ui/debug-panel.webp" alt="" aria-hidden="true"></span><span>Тестовая панель DropFish</span></h2>
+      <p class="debug-note">Инструменты для принудительной проверки погоды, улова, Ангуса, эффектов и окончания сессии.</p>
+      <div id="dropfishDebugGrid" class="dropfish-debug-grid"></div>
+    </div>
+  </dialog>
 
   <dialog id="choiceDialog" class="modal">
     <div class="modal-card ui-dialog-panel">
@@ -210,7 +216,7 @@
   <div id="weatherFx" class="weather-fx" aria-hidden="true"></div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-  <script src="ui-enhancements.min.js"></script>
-  <script src="script.public.min.js?v=17.92-arcade-motion-exception"></script>
+  <script src="ui-enhancements.js?v=1.90-rift-media"></script>
+  <script src="script.public.min.js?v=17.93-inline-session-finish"></script>
 </body>
 </html>
