@@ -8,3 +8,8 @@ html.public-game-locked body>:not(.public-gate){pointer-events:none;user-select:
 .public-gate-review{background:linear-gradient(135deg,#7ce8ff,#69d899)!important}
 html.public-results-review #newGameBtn,
 html.public-results-review #restartBtn{display:none!important}
+.public-gate.is-review{inset:max(8px,env(safe-area-inset-top)) 8px auto auto;display:block;width:min(330px,calc(100vw - 16px));padding:0;background:transparent;backdrop-filter:none;pointer-events:none}
+.public-gate.is-review .public-gate-card{width:100%;gap:5px;padding:10px 12px;border-radius:14px;background:linear-gradient(145deg,rgba(16,47,71,.96),rgba(7,24,39,.96));box-shadow:0 10px 34px rgba(0,0,0,.42);text-align:left;pointer-events:auto}
+.public-gate.is-review .public-gate-card p{font-size:.76rem;line-height:1.25}
+.public-gate.is-review .public-countdown{font-size:1.35rem;line-height:1.1}
+.public-gate.is-review .public-gate-card a{font-size:.72rem}
