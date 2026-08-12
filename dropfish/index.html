@@ -22,7 +22,7 @@
       }
     })();
   </script>
-  <link rel="stylesheet" href="style.css?v=2.81-history-alignment" />
+  <link rel="stylesheet" href="style.css?v=3.09-rift-fish-layout" />
   <script>
   /* Telegram SDK грузим ТОЛЬКО внутри Telegram. В обычном браузере он не нужен,
      а его синхронная загрузка блокировала отрисовку страницы на минуты, если
@@ -39,7 +39,7 @@
     }
   })();
   </script>
-  <script src="viewport-fit.js?v=1.84-fit-v3"></script>
+  <script src="viewport-fit.min.js?v=1.84-fit-v3"></script>
 </head>
 <body>
   <main class="app-shell">
@@ -198,6 +198,12 @@
     </div>
   </dialog>
 
+  <dialog id="dungeonDialog" class="modal dungeon-modal">
+    <div id="dungeonCard" class="dungeon-card">
+      <div id="dungeonScene" class="dungeon-scene"></div>
+    </div>
+  </dialog>
+
   <div id="effectOverlay" class="effect-overlay" aria-hidden="true">
     <div id="effectBackdrop" class="effect-backdrop"></div>
     <div id="effectParticles" class="effect-particles"></div>
@@ -208,7 +214,7 @@
   <div id="weatherFx" class="weather-fx" aria-hidden="true"></div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-  <script src="ui-enhancements.js?v=1.90-rift-media"></script>
-  <script src="script.public.min.js?v=18.05-history-alignment"></script>
+  <script src="ui-enhancements.min.js?v=1.90-rift-media"></script>
+  <script src="script.public.min.js?v=19.29-rift-fish-layout"></script>
 </body>
 </html>
