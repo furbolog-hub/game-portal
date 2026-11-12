@@ -6,8 +6,8 @@
   <meta name="theme-color" content="#071b2d" />
   <link rel="icon" type="image/png" href="./assets/branding/dropfish-logo.png" />
   <title>DropFish</title>
-  <link rel="stylesheet" href="../session-guard.css?v=20261109-daily-limit-protected">
-  <script src="../session-guard.min.js?v=20261109-daily-limit-protected"></script>
+  <link rel="stylesheet" href="../session-guard.css?v=20261112-daily-limit-protected">
+  <script src="../session-guard.min.js?v=20261112-daily-limit-protected"></script>
   <script>
     // Раннее определение обычного Safari на iPhone до построения интерфейса.
     (() => {
@@ -23,8 +23,8 @@
       }
     })();
   </script>
-  <link rel="stylesheet" href="style.css?v=20261109-dropfish-visual-contract" />
-  <link rel="stylesheet" href="mobile-ui.css?v=20261109-dropfish-visual-contract" />
+  <link rel="stylesheet" href="style.css?v=20261112-dropfish-effects-arcade" />
+  <link rel="stylesheet" href="mobile-ui.css?v=20261112-dropfish-effects-arcade" />
   <script>
   /* Telegram SDK грузим ТОЛЬКО внутри Telegram. В обычном браузере он не нужен,
      а его синхронная загрузка блокировала отрисовку страницы на минуты, если
@@ -41,7 +41,7 @@
     }
   })();
   </script>
-  <script src="viewport-fit.min.js?v=20261109-dropfish-visual-contract"></script>
+  <script src="viewport-fit.min.js?v=20261112-dropfish-effects-arcade"></script>
 </head>
 <body>
   <main class="app-shell mobile-game-shell" data-mobile-game-shell>
@@ -97,12 +97,8 @@
     </section>
 
     <section class="inventory active-effects-rail glass ui-surface ui-panel" aria-labelledby="activeEffectsTitle">
-      <div class="section-heading active-effects-rail__heading ui-panel-heading">
-        <h2 id="activeEffectsTitle" class="visually-hidden">Активные эффекты</h2>
-        <span class="active-effects-rail__label" aria-hidden="true">Эффекты</span>
-        <span id="effectCount">0</span>
-      </div>
-      <div id="effectsList" class="chips"><span class="muted">Пока нет</span></div>
+      <h2 id="activeEffectsTitle" class="visually-hidden">Активные эффекты</h2>
+      <div id="effectsList" class="chips"><span class="active-effects-empty">Эффекты: Пока нет</span></div>
     </section>
     </div>
     </section>
@@ -113,10 +109,12 @@
         <h2>Хронология улова</h2>
         <button id="historyFiltersToggle" class="chronology-filter-toggle" type="button" aria-expanded="false" aria-controls="historyFiltersPanel" aria-label="Показать фильтры хронологии">
           <span id="historyFilterSummary" class="chronology-filter-toggle__summary" hidden>Все</span>
+          <span id="historyEffectsSummary" class="chronology-filter-toggle__effects" aria-live="polite" aria-atomic="true">Эффекты: <span id="effectCount">0</span></span>
           <span id="historyCount">0</span>
           <span class="chronology-filter-toggle__chevron" aria-hidden="true">›</span>
         </button>
       </div>
+      <div id="toast" class="toast" role="status" aria-live="polite"></div>
       <div id="historyFiltersPanel" class="chronology-filter-disclosure" aria-hidden="true" inert>
         <div class="chronology-filter-disclosure__inner">
           <div class="chronology-toolbar">
@@ -347,10 +345,8 @@
     <div id="effectSubtitle" class="effect-subtitle"></div>
   </div>
   <div id="weatherFx" class="weather-fx" aria-hidden="true"></div>
-  <div id="toast" class="toast" role="status" aria-live="polite"></div>
-
-  <script src="mobile-ui.min.js?v=20261109-dropfish-visual-contract"></script>
-  <script src="ui-enhancements.min.js?v=20261109-dropfish-visual-contract"></script>
-  <script src="script.public.min.js?v=20261109-dropfish-visual-contract"></script>
+  <script src="mobile-ui.min.js?v=20261112-dropfish-effects-arcade"></script>
+  <script src="ui-enhancements.min.js?v=20261112-dropfish-effects-arcade"></script>
+  <script src="script.public.min.js?v=20261112-dropfish-effects-arcade"></script>
 </body>
 </html>
